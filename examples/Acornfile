@@ -10,7 +10,7 @@ containers: registry: {
 	ports: publish: "5000/http"
 	files: {
 		"/auth/htpasswd":                  "secret://generated-htpasswd/content"
-		"/etc/docker/registry/config.yml": "secret://registry-config/template"
+		"/etc/docker/registry/config.yml": std.toYAML(localData.config)
 	}
 }
 
@@ -31,11 +31,6 @@ secrets: "registry-http-secret": {
 
 secrets: "registry-user-creds": {
 	type: "basic"
-}
-
-secrets: "registry-config": {
-	type: "template"
-	data: template: std.toYAML(localData.config)
 }
 
 secrets: "generated-htpasswd": {
