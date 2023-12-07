@@ -1,0 +1,103 @@
+name:        "Minio"
+description: "Minio is an S3 compatible object storage server"
+readme:      "./README.md"
+info:        localData.info
+
+args: bucketName: "bucket"
+
+services: admin: {
+	generated: job: "setup"
+	default: true
+}
+
+containers: minio: {
+	image: images["minio-img"].image
+	ports: [
+		"9000/http",
+		"9001/http",
+	]
+	env: {
+		MINIO_ROOT_USER:     "secret://root-user/username"
+		MINIO_ROOT_PASSWORD: "secret://root-user/password"
+	}
+	dirs: {
+		"/data": "volume://minio-data"
+	}
+	command: [
+		"server",
+		"/data",
+		"--address",
+		":9000",
+		"--console-address",
+		":9001",
+	]
+	sidecars: {
+		"volume-init": {
+			image: images["minio-img"].image
+			init:  true
+			dirs: {
+				"/data": "volume://minio-data"
+			}
+			entrypoint: [
+				"sh",
+				"-c",
+				"mkdir -p /data/\(args.bucketName)",
+			]
+		}
+	}
+}
+
+jobs: setup: {
+	name:  "Set Minio API Keys"
+	image: images["minio-img"].image
+	dirs: "/acorn/scripts/": "./scripts"
+	dependsOn: ["minio"]
+	entrypoint: ["/acorn/scripts/render.sh"]
+	env: {
+		MINIO_ROOT_USER:     "secret://root-user/username"
+		MINIO_ROOT_PASSWORD: "secret://root-user/password"
+		MINIO_ACCESS_KEY:    "secret://api-key/username"
+		MINIO_SECRET_KEY:    "secret://api-key/password"
+		BUCKET_NAME:         args.bucketName
+	}
+}
+
+secrets: "root-user": {
+	type: "basic"
+	data: {
+		username: "minio"
+		password: ""
+	}
+}
+
+secrets: "api-key": {
+	type: "basic"
+	params: {
+		passwordCharacters: "[a-zA-Z0-9]"
+		passwordLength:     32
+		usernameCharacters: "[a-zA-Z0-9]"
+		usernameLength:     16
+	}
+}
+
+volumes: "minio-data": {}
+
+images: "minio-img": image: "index.docker.io/minio/minio:RELEASE.2023-12-06T09-09-22Z"
+
+localData: info: """
+## Usage
+
+```aml
+services: bucket: image: "ghcr.io/acorn-io/minio:*"
+
+containers: app: {
+    image: "app-image"
+    consumes: ["bucket"]
+    env: {
+        AWS_ACCESS_KEY_ID:     "@{service.bucket.api-key.username}"
+        AWS_SECRET_ACCESS_KEY: "@{service.bucket.api-key.username}"
+        ENDPOINT_URL:          "@{service.bucket.data.proto}@{service.bucket.address}:@{service.bucket.ports.9000}"
+    }
+}
+```
+"""

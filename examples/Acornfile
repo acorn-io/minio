@@ -1,0 +1,75 @@
+services: s3: {
+	build: {
+		context:   "../"
+		acornfile: "../Acornfile"
+	}
+}
+
+containers: registry: {
+	image: "registry"
+	ports: publish: "5000/http"
+	files: {
+		"/auth/htpasswd":                  "secret://generated-htpasswd/content"
+		"/etc/docker/registry/config.yml": "secret://registry-config/template"
+	}
+}
+
+jobs: "htpasswd-create": {
+	env: {
+		USER: "secret://registry-user-creds/username"
+		PASS: "secret://registry-user-creds/password"
+	}
+	entrypoint: "/bin/sh -c"
+	image:      "httpd:2"
+	// Output of a generated secret needs to be placed in the file /run/secrets/output.
+	cmd: ["htpasswd -Bbc /run/secrets/output $USER $PASS"]
+}
+
+secrets: "registry-http-secret": {
+	type: "token"
+}
+
+secrets: "registry-user-creds": {
+	type: "basic"
+}
+
+secrets: "registry-config": {
+	type: "template"
+	data: template: std.toYAML(localData.config)
+}
+
+secrets: "generated-htpasswd": {
+	type: "generated"
+	params: {
+		job: "htpasswd-create"
+	}
+}
+
+localData: config: {
+	version: "0.1"
+	log: fields: service: "registry"
+	auth: htpasswd: {
+		realm: "basic-realm"
+		path:  "/auth/htpasswd"
+	}
+	http: {
+		addr:   ":5000"
+		secret: "${secret://registry-http-secret/token}"
+		headers: {
+			"X-Content-Type-Options": ["nosniff"]
+		}
+	}
+	storage: s3: {
+		accesskey:                   "@{service.s3.secrets.api-key.username}"
+		secretkey:                   "@{service.s3.secrets.api-key.password}"
+		regionendpoint:              "@{service.s3.data.proto}@{service.s3.address}:@{service.s3.ports.9000}"
+		region:                      "us-west-1"
+		bucket:                      "@{service.s3.data.name}"
+		secure:                      false
+		v4auth:                      true
+		chunksize:                   5242880
+		multipartcopychunksize:      33554432
+		multipartcopymaxconcurrency: 100
+		multipartcopythresholdsize:  33554432
+	}
+}
