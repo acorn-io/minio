@@ -12,6 +12,9 @@ containers: registry: {
 		"/auth/htpasswd":                  "secret://generated-htpasswd/content"
 		"/etc/docker/registry/config.yml": std.toYAML(localData.config)
 	}
+	env: {
+		REGISTRY_HTTP_HOST: "https://@{service.registry.endpoint}"
+	}
 }
 
 jobs: "htpasswd-create": {
@@ -44,7 +47,7 @@ localData: config: {
 	version: "0.1"
 	log: fields: service: "registry"
 	auth: htpasswd: {
-		realm: "basic-realm"
+		realm: "registry"
 		path:  "/auth/htpasswd"
 	}
 	http: {
@@ -57,7 +60,7 @@ localData: config: {
 	storage: s3: {
 		accesskey:                   "@{service.s3.secrets.api-key.username}"
 		secretkey:                   "@{service.s3.secrets.api-key.password}"
-		regionendpoint:              "@{service.s3.data.proto}@{service.s3.address}:@{service.s3.ports.9000}"
+		regionendpoint:              "@{service.s3.data.proto}@{service.s3.address}:@{service.s3.ports.80}"
 		region:                      "us-west-1"
 		bucket:                      "@{service.s3.data.name}"
 		secure:                      false

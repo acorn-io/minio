@@ -17,7 +17,9 @@ services: admin: {
     default: true
     secrets: ["api-key"]
     ports: [
-        "9000",
+        "80:9000",
+        "443:9000",
+        "9000:9000",
         "9001",
     ]
     data: {

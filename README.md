@@ -15,10 +15,14 @@ acorn port-forward minio 9000
 acorn port-forward minio 9001
 ```
 
-Then open your browser to <http://localhost:9000>
+Then open your browser to <http://localhost:9001>
 
 The credentials can be revealed:
 
 ```bash
 acorn secret reveal minio.root-user
 ```
+
+## Disclaimer
+
+Disclaimer: You agree all software products on this site, including Acorns or their contents, may contain projects and materials subject to intellectual property restrictions and/or Open-Source license (“Restricted Items”). Restricted Items found anywhere within this Acorn or on Acorn.io are provided “as-is” without warranty of any kind and are subject to their own Open-Source licenses and your compliance with such licenses are solely and exclusively your responsibility. [MinIO](https://min.io) is licensed under AGPL which can be found here [License](https://github.com/minio/minio/blob/master/LICENSE) and Acorn.io does not endorse and is not affiliated with MinIO.
