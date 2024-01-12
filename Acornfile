@@ -82,7 +82,7 @@ secrets: "api-key": {
 
 volumes: "minio-data": {}
 
-images: "minio-img": image: "index.docker.io/minio/minio:RELEASE.2023-12-06T09-09-22Z"
+images: "minio-img": image: "index.docker.io/minio/minio:RELEASE.2024-01-11T07-46-16Z"
 
 localData: info: """
 ## Usage
