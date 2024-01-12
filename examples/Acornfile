@@ -1,8 +1,5 @@
 services: s3: {
-	build: {
-		context:   "../"
-		acornfile: "../Acornfile"
-	}
+	image: "ghcr.io/acorn-io/mino:*"
 }
 
 containers: registry: {
