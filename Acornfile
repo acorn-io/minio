@@ -2,6 +2,7 @@ name:        "Minio"
 description: "Minio is an S3 compatible object storage server"
 readme:      "./README.md"
 info:        localData.info
+icon:        "./icon.png"
 
 args: bucketName: "bucket"
 
@@ -94,10 +95,15 @@ containers: app: {
     image: "app-image"
     consumes: ["bucket"]
     env: {
-        AWS_ACCESS_KEY_ID:     "@{service.bucket.api-key.username}"
-        AWS_SECRET_ACCESS_KEY: "@{service.bucket.api-key.username}"
-        ENDPOINT_URL:          "@{service.bucket.data.proto}@{service.bucket.address}:@{service.bucket.ports.9000}"
+        AWS_ACCESS_KEY_ID:     "@{@{service.}bucket.secrets.api-key.username}"
+        AWS_SECRET_ACCESS_KEY: "@{@{service.}bucket.secrets.api-key.username}"
+        ENDPOINT_URL:          "@{@{service.}bucket.data.proto}@{@{service.}bucket.address}:@{@{service.}bucket.ports.9000}/@{@{service.}bucket.data.name}"
     }
 }
 ```
+
+If you would like to use a standard ports for the bucket service you can use:
+@{@{service.}bucket.ports.443}
+@{@{service.}bucket.ports.80}
+
 """
